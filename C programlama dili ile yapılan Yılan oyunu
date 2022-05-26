@@ -1,0 +1,244 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <windows.h>
+#include <conio.h>
+
+
+
+int kafa_x,kafa_y,yem_x,yem_y,hareket,skor,oyun_sonlandirma,oyuncu_sayisi;
+int kuyruk_sayisi=0;
+int kuyruk_x[100],kuyruk_y[100];
+
+struct oyuncu{
+	char ad[50];
+}oync[5];
+
+void gotoxy(short x, short y) {
+ HANDLE hConsoleOutput;
+ COORD Cursor_Pos = {x-1, y-1};
+
+ hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+ SetConsoleCursorPosition(hConsoleOutput, Cursor_Pos);
+}
+
+void YilanHareketi()
+{
+    int i;
+    int tmp_x,tmp_y,tmp2_x,tmp2_y;
+
+    tmp_x=kuyruk_x[0];
+    tmp_y=kuyruk_y[0];
+    kuyruk_x[0]=kafa_x;
+    kuyruk_y[0]=kafa_y;
+
+    for(i=1;i<=kuyruk_sayisi;i++){
+
+            tmp2_x=kuyruk_x[i];
+            tmp2_y=kuyruk_y[i];
+            kuyruk_x[i]=tmp_x;
+            kuyruk_y[i]=tmp_y;
+            tmp_x=tmp2_x;
+            tmp_y=tmp2_y;
+
+            if(kafa_x==kuyruk_x[i+1] && kafa_y==kuyruk_y[i+1]){
+            	oyun_sonlandirma=1;
+			}
+
+            else if(kafa_x==kuyruk_x[2] && kafa_y==kuyruk_y[2]){
+            	oyun_sonlandirma=1;
+			}
+        }
+
+ if(kafa_x==0 || kafa_x==26 || kafa_y==0 || kafa_y==46){
+     oyun_sonlandirma=1;
+  }
+
+  if(kafa_x==yem_x && kafa_y==yem_y){
+
+    feedback3:
+    yem_x=rand()%24;
+    if(yem_x == 0){
+    goto feedback3;}
+
+    feedback4:
+    yem_y=rand()%44;
+    if(yem_y == 0){
+    goto feedback4;}
+    skor+=10;
+    kuyruk_sayisi++;
+    }
+}
+
+void klavyehareketi(){
+
+    if(kbhit()){
+       switch(getch())
+       {
+           case 'w':
+           {
+               hareket=1;
+               break;
+           }
+            case 's':
+           {
+               hareket=2;
+               break;
+           }
+           case 'a':
+           {
+               hareket=3;
+               break;
+           }
+           case 'd':
+           {
+               hareket=4;
+               break;
+           }
+        }
+     }
+
+      switch(hareket)
+      {
+          case 1:
+          {
+             kafa_x--;
+             break;
+          }
+          case 2:
+          {
+             kafa_x++;
+             break;
+          }
+          case 3:
+          {
+            kafa_y--;
+            break;
+          }
+          case 4:
+          {
+             kafa_y++;
+             break;
+          }
+       }
+    }
+
+void setup(){
+    kafa_x=13;
+    kafa_y=23;
+
+    feedback1:
+    yem_x=rand()%25;
+    if(yem_x == 0){
+    goto feedback1;}
+
+    feedback2:
+    yem_y=rand()%45;
+    if(yem_y == 0){
+    goto feedback2;}
+
+    oyun_sonlandirma=0;
+    skor=0;
+    kuyruk_sayisi++;
+}
+
+void OyunAlani(){
+   int i,j,k,bosluk;
+
+   for(i=0;i<=26;i++){
+
+        for ( j = 0; j <=46; j++) {
+                gotoxy(j+1,i+1);
+            if(i==0 || i==26 || j==0 || j==46){
+                printf("%c",178);
+            }
+            else{
+                if(i == kafa_x && j == kafa_y){
+                    printf("%c",223);
+                }
+                else if(i == yem_x && j == yem_y){
+                    printf("%c",219);
+                }
+                else{
+                        bosluk=0;
+                     for(k=0;k<kuyruk_sayisi;k++){
+                           if(i==kuyruk_x[k] && j==kuyruk_y[k]){
+                                printf("%c",223);
+                                bosluk=1;
+                            }
+                        }
+                          if(bosluk==0){
+                            printf(" ");
+                    }
+                }
+            }
+        }
+        printf("\n");
+    }
+    printf("yaptiginiz skor:%d",skor);
+}
+
+int main(){
+system("color 40");
+int i;
+
+FILE *pdosya;
+pdosya=fopen("yusufunvenusretinyilani.txt","w+");
+
+
+printf("oyuncu sayisi giriniz:");
+scanf("%d",&oyuncu_sayisi);
+system("cls");
+
+ fprintf(pdosya,"\n\t|||*||| YILAN OYUNU |||*|||\n\n");
+ fprintf(pdosya,"\t     Ad\t\t  Score\n");
+ fprintf(pdosya,"\t  -------\t  ------\n");
+for( i=0;i<oyuncu_sayisi;i++){
+
+	printf("%d. Oyuncu ismini girin:  ",i+1);
+	scanf("%s",oync[i].ad);
+	system("cls");
+
+	int seviye;
+	int derece;
+
+	printf("Lutfen zorluk seviyesi \n1=kolay \n2=orta \n3=zor \nSeciniz:  ");
+	scanf("%d",&seviye);
+	system("cls");
+
+    switch(seviye){
+     case 1: derece=75000;
+      break;
+     case 2: derece=40000;
+      break;
+     case 3: derece=5000;
+      break;
+     default: derece=65000;
+      break;
+    }
+    system("cls");
+
+
+    setup();
+    skor=0;
+
+    while(oyun_sonlandirma!=1)
+{
+    klavyehareketi();
+    OyunAlani();
+    YilanHareketi();
+
+usleep(derece);
+}
+
+
+gotoxy(10,10);
+printf("\n\t\tGAME OVER");
+sleep(2);// game over bekletme süresi
+kuyruk_sayisi=0;
+system("cls");
+
+fprintf(pdosya,"%d. Oyuncu: [%s]\t  [%d]\n",i+1,oync[i].ad,skor);
+
+}
+}
